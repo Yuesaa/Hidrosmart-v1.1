@@ -1,11 +1,9 @@
 
 import React from 'react';
-import Navbar from '@/components/Navbar';
-import HeroSection from '@/components/HeroSection';
+import { Navbar, HeroSection, Footer } from '@/components/HomeComponents';
 import AboutSection from '@/components/AboutSection';
 import FeaturesSection from '@/components/FeaturesSection';
 import CTASection from '@/components/CTASection';
-import Footer from '@/components/Footer';
 
 const Index = () => {
   return (

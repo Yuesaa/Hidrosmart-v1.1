@@ -18,6 +18,7 @@ export type Database = {
           pesan: string | null
           phone: string | null
           subjek: string | null
+          user_id: string | null
         }
         Insert: {
           email?: string | null
@@ -27,6 +28,7 @@ export type Database = {
           pesan?: string | null
           phone?: string | null
           subjek?: string | null
+          user_id?: string | null
         }
         Update: {
           email?: string | null
@@ -36,6 +38,7 @@ export type Database = {
           pesan?: string | null
           phone?: string | null
           subjek?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -50,27 +53,36 @@ export type Database = {
       guarantee: {
         Row: {
           domisili: string | null
+          email: string | null
           id: number
           id_pengguna: number | null
           kode_garansi: string | null
+          name: string | null
           phone: string
           tanggal_claim: string | null
+          user_id: string | null
         }
         Insert: {
           domisili?: string | null
+          email?: string | null
           id?: number
           id_pengguna?: number | null
           kode_garansi?: string | null
+          name?: string | null
           phone: string
           tanggal_claim?: string | null
+          user_id?: string | null
         }
         Update: {
           domisili?: string | null
+          email?: string | null
           id?: number
           id_pengguna?: number | null
           kode_garansi?: string | null
+          name?: string | null
           phone?: string
           tanggal_claim?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -87,46 +99,55 @@ export type Database = {
           alamat: string | null
           bukti_transfer: string | null
           color: string | null
+          email: string | null
           id: number
           id_pengguna: number | null
           kuantitas: number | null
           metode_pembayaran: string | null
+          name: string | null
           ongkir: string | null
           phone: string
           status: string | null
           subtotal_harga: number | null
           tanggal_transaksi: string | null
           total_harga: number | null
+          user_id: string | null
         }
         Insert: {
           alamat?: string | null
           bukti_transfer?: string | null
           color?: string | null
+          email?: string | null
           id?: number
           id_pengguna?: number | null
           kuantitas?: number | null
           metode_pembayaran?: string | null
+          name?: string | null
           ongkir?: string | null
           phone: string
           status?: string | null
           subtotal_harga?: number | null
           tanggal_transaksi?: string | null
           total_harga?: number | null
+          user_id?: string | null
         }
         Update: {
           alamat?: string | null
           bukti_transfer?: string | null
           color?: string | null
+          email?: string | null
           id?: number
           id_pengguna?: number | null
           kuantitas?: number | null
           metode_pembayaran?: string | null
+          name?: string | null
           ongkir?: string | null
           phone?: string
           status?: string | null
           subtotal_harga?: number | null
           tanggal_transaksi?: string | null
           total_harga?: number | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -138,6 +159,39 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          address: string | null
+          avatar_url: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          id: string
+          name: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ulasan: {
         Row: {
           id: number
@@ -145,6 +199,7 @@ export type Database = {
           id_pengguna: number
           isi_ulasan: string | null
           rating: number | null
+          user_id: string | null
         }
         Insert: {
           id?: number
@@ -152,6 +207,7 @@ export type Database = {
           id_pengguna: number
           isi_ulasan?: string | null
           rating?: number | null
+          user_id?: string | null
         }
         Update: {
           id?: number
@@ -159,6 +215,7 @@ export type Database = {
           id_pengguna?: number
           isi_ulasan?: string | null
           rating?: number | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -201,15 +258,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _user_id: string
+          _role: Database["public"]["Enums"]["user_role"]
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      user_role: "user" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -324,6 +408,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      user_role: ["user", "admin"],
+    },
   },
 } as const

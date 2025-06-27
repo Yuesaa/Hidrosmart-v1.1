@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CreditCard, Banknote, Building2, Smartphone, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -26,6 +25,8 @@ const Payment = () => {
   });
 
   React.useEffect(() => {
+    console.log('Payment component mounted with:', { user: user?.email, orderData });
+    
     if (!user) {
       toast.error('Silakan login terlebih dahulu');
       navigate('/auth');
@@ -47,63 +48,81 @@ const Payment = () => {
       return;
     }
 
+    if (!user || !orderData) {
+      toast.error('Data tidak lengkap');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      console.log('Creating order with data:', {
-        user_id: user?.id,
-        name: profile?.name || user?.email,
-        email: profile?.email || user?.email,
+      console.log('Creating order with user:', user.id);
+      console.log('Order data:', orderData);
+      console.log('Payment data:', paymentData);
+
+      // Prepare order data for insertion
+      const orderInsertData = {
+        user_id: user.id,
+        name: profile?.name || user.email?.split('@')[0] || 'Unknown',
+        email: user.email,
         phone: orderData.phone,
         alamat: orderData.alamat,
         color: orderData.color,
-        kuantitas: orderData.kuantitas,
-        subtotal_harga: orderData.subtotal_harga,
-        total_harga: orderData.total_harga,
+        kuantitas: parseInt(orderData.kuantitas.toString()),
+        subtotal_harga: parseFloat(orderData.subtotal_harga.toString()),
+        total_harga: parseFloat(orderData.total_harga.toString()),
         ongkir: orderData.ongkir.toString(),
         metode_pembayaran: paymentData.metode_pembayaran,
-        bukti_transfer: paymentData.bukti_transfer,
-        status: 'pending'
-      });
+        bukti_transfer: paymentData.bukti_transfer || '',
+        status: 'pending',
+        tanggal_transaksi: new Date().toISOString()
+      };
+
+      console.log('Inserting order data:', orderInsertData);
 
       const { data, error } = await supabase
         .from('order')
-        .insert({
-          user_id: user?.id,
-          name: profile?.name || user?.email,
-          email: profile?.email || user?.email,
-          phone: orderData.phone,
-          alamat: orderData.alamat,
-          color: orderData.color,
-          kuantitas: orderData.kuantitas,
-          subtotal_harga: orderData.subtotal_harga,
-          total_harga: orderData.total_harga,
-          ongkir: orderData.ongkir.toString(),
-          metode_pembayaran: paymentData.metode_pembayaran,
-          bukti_transfer: paymentData.bukti_transfer,
-          status: 'pending',
-          tanggal_transaksi: new Date().toISOString()
-        })
+        .insert(orderInsertData)
         .select();
 
       console.log('Insert result:', { data, error });
 
       if (error) {
         console.error('Database error:', error);
-        throw error;
+        throw new Error(`Gagal menyimpan pesanan: ${error.message}`);
       }
 
+      if (!data || data.length === 0) {
+        throw new Error('Tidak ada data yang dikembalikan dari database');
+      }
+
+      console.log('Order created successfully:', data[0]);
       toast.success('Pesanan berhasil dibuat!');
-      navigate('/dashboard');
+      
+      // Navigate to dashboard after successful order creation
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 1500);
+
     } catch (error) {
       console.error('Error creating order:', error);
-      toast.error('Gagal membuat pesanan: ' + (error.message || 'Unknown error'));
+      const errorMessage = error instanceof Error ? error.message : 'Terjadi kesalahan yang tidak diketahui';
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
-  if (!user || !orderData) return null;
+  if (!user || !orderData) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   const paymentMethods = [
     { value: 'bank_transfer', label: 'Transfer Bank', icon: Building2 },
@@ -143,15 +162,15 @@ const Payment = () => {
                   <div className="space-y-2 pt-4 border-t">
                     <div className="flex justify-between">
                       <span>Subtotal</span>
-                      <span>Rp {orderData.subtotal_harga.toLocaleString('id-ID')}</span>
+                      <span>Rp {Number(orderData.subtotal_harga).toLocaleString('id-ID')}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Ongkos Kirim</span>
-                      <span>Rp {orderData.ongkir.toLocaleString('id-ID')}</span>
+                      <span>Rp {Number(orderData.ongkir).toLocaleString('id-ID')}</span>
                     </div>
                     <div className="flex justify-between font-bold text-lg pt-2 border-t">
                       <span>Total Pembayaran</span>
-                      <span className="text-blue-600">Rp {orderData.total_harga.toLocaleString('id-ID')}</span>
+                      <span className="text-blue-600">Rp {Number(orderData.total_harga).toLocaleString('id-ID')}</span>
                     </div>
                   </div>
                 </CardContent>

@@ -35,6 +35,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state change:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         
@@ -54,10 +55,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 .eq('user_id', session.user.id)
                 .single();
               
+              console.log('Profile data:', profileData);
+              console.log('Role data:', roleData);
+              
               setProfile(profileData);
               setUserRole(roleData?.role || 'user');
             } catch (error) {
               console.error('Error fetching profile:', error);
+              setUserRole('user'); // Default to user role if fetch fails
             }
           }, 0);
         } else {

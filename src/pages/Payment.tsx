@@ -50,7 +50,23 @@ const Payment = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase
+      console.log('Creating order with data:', {
+        user_id: user?.id,
+        name: profile?.name || user?.email,
+        email: profile?.email || user?.email,
+        phone: orderData.phone,
+        alamat: orderData.alamat,
+        color: orderData.color,
+        kuantitas: orderData.kuantitas,
+        subtotal_harga: orderData.subtotal_harga,
+        total_harga: orderData.total_harga,
+        ongkir: orderData.ongkir.toString(),
+        metode_pembayaran: paymentData.metode_pembayaran,
+        bukti_transfer: paymentData.bukti_transfer,
+        status: 'pending'
+      });
+
+      const { data, error } = await supabase
         .from('order')
         .insert({
           user_id: user?.id,
@@ -67,9 +83,13 @@ const Payment = () => {
           bukti_transfer: paymentData.bukti_transfer,
           status: 'pending',
           tanggal_transaksi: new Date().toISOString()
-        });
+        })
+        .select();
+
+      console.log('Insert result:', { data, error });
 
       if (error) {
+        console.error('Database error:', error);
         throw error;
       }
 
@@ -77,7 +97,7 @@ const Payment = () => {
       navigate('/dashboard');
     } catch (error) {
       console.error('Error creating order:', error);
-      toast.error('Gagal membuat pesanan');
+      toast.error('Gagal membuat pesanan: ' + (error.message || 'Unknown error'));
     }
 
     setLoading(false);
@@ -184,7 +204,7 @@ const Payment = () => {
                       <div className="bg-green-50 p-4 rounded-lg">
                         <h4 className="font-semibold text-gray-900 mb-2">E-Wallet:</h4>
                         <div className="space-y-1 text-sm">
-                          <p>GoP ay: <strong>081234567890</strong></p>
+                          <p>GoPay: <strong>081234567890</strong></p>
                           <p>OVO: <strong>081234567890</strong></p>
                           <p>DANA: <strong>081234567890</strong></p>
                         </div>

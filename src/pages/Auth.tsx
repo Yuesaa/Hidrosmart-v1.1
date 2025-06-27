@@ -1,13 +1,13 @@
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Droplets, Mail, Lock, User, Phone } from 'lucide-react';
+import { Droplets, Mail, Lock, User, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Auth = () => {
@@ -38,7 +38,7 @@ const Auth = () => {
         toast.error(error.message);
       } else {
         toast.success('Login berhasil!');
-        navigate('/');
+        navigate('/dashboard');
       }
     } catch (error) {
       toast.error('Terjadi kesalahan saat login');
@@ -75,6 +75,17 @@ const Auth = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
+        {/* Back to Home Button */}
+        <div className="mb-6">
+          <Link 
+            to="/" 
+            className="inline-flex items-center space-x-2 text-gray-600 hover:text-blue-600 transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span>Kembali ke Home</span>
+          </Link>
+        </div>
+
         <div className="text-center mb-8">
           <div className="flex justify-center items-center space-x-2 mb-4">
             <Droplets className="h-10 w-10 text-blue-600" />

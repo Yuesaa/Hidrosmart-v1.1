@@ -8,8 +8,10 @@ import AdminDashboard from '@/components/dashboard/AdminDashboard';
 import { Navbar, Footer } from '@/components/HomeComponents';
 
 const Dashboard = () => {
-  const { user, isAdmin, loading } = useAuth();
+  const { user, isAdmin, loading, userRole } = useAuth();
   const navigate = useNavigate();
+
+  console.log('Dashboard render - user:', user?.email, 'isAdmin:', isAdmin, 'userRole:', userRole, 'loading:', loading);
 
   useEffect(() => {
     if (!loading && !user) {

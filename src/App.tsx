@@ -13,6 +13,7 @@ import Auth from "./pages/Auth";
 import Order from "./pages/Order";
 import Payment from "./pages/Payment";
 import Dashboard from "./pages/Dashboard";
+import ChatBot from "./components/ChatBot";
 import { AuthProvider } from "./contexts/AuthContext";
 
 const queryClient = new QueryClient();
@@ -35,6 +36,7 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <ChatBot />
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>

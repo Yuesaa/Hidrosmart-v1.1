@@ -1,5 +1,6 @@
-
 import React, { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Navbar, Footer } from '@/components/HomeComponents';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,35 +12,62 @@ import { Mail, Phone, MapPin, Clock, Send, Droplets, Filter, Zap, Award, Users, 
 import { toast } from 'sonner';
 
 const Contact = () => {
+  const { user, profile } = useAuth();
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
     subject: '',
     message: ''
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Check if user is logged in
+    if (!user || !profile) {
+      toast.error('Anda harus login terlebih dahulu untuk mengirim pesan');
+      return;
+    }
+
     // Basic validation
-    if (!formData.name || !formData.email || !formData.message) {
+    if (!formData.subject || !formData.message) {
       toast.error('Mohon lengkapi semua field yang wajib diisi');
       return;
     }
 
-    // Here you would typically send the data to your backend
-    console.log('Form submitted:', formData);
-    toast.success('Pesan Anda berhasil dikirim! Kami akan segera menghubungi Anda.');
-    
-    // Reset form
-    setFormData({
-      name: '',
-      email: '',
-      phone: '',
-      subject: '',
-      message: ''
-    });
+    try {
+      // Insert contact data into database
+      const { error } = await supabase
+        .from('contact')
+        .insert({
+          user_id: user.id,
+          name: profile.name,
+          phone: profile.phone || '',
+          email: profile.email || user.email,
+          subjek: formData.subject,
+          pesan: formData.message
+        });
+
+      if (error) throw error;
+
+      console.log('Contact form submitted:', {
+        user: profile.name,
+        phone: profile.phone,
+        email: profile.email,
+        subject: formData.subject,
+        message: formData.message,
+        adminPhone: '089652429620'
+      });
+      
+      toast.success('Pesan Anda berhasil dikirim! Admin akan segera menghubungi Anda.');
+      
+      // Reset form
+      setFormData({
+        subject: '',
+        message: ''
+      });
+    } catch (error) {
+      console.error('Error submitting contact form:', error);
+      toast.error('Gagal mengirim pesan. Silakan coba lagi.');
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -178,87 +206,64 @@ const Contact = () => {
             <Card className="shadow-lg">
               <CardHeader>
                 <CardTitle className="text-2xl text-gray-900">Kirim Pesan</CardTitle>
+                {user && profile && (
+                  <div className="text-sm text-gray-600 space-y-1">
+                    <p><strong>Nama:</strong> {profile.name}</p>
+                    <p><strong>Email:</strong> {profile.email || user.email}</p>
+                    <p><strong>No. Telepon:</strong> {profile.phone || 'Belum diisi'}</p>
+                  </div>
+                )}
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid md:grid-cols-2 gap-4">
+                {!user ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-600 mb-4">Silakan login terlebih dahulu untuk mengirim pesan</p>
+                    <Button 
+                      onClick={() => window.location.href = '/auth'}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      Login
+                    </Button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="space-y-2">
-                      <Label htmlFor="name">Nama Lengkap *</Label>
+                      <Label htmlFor="subject">Subjek *</Label>
                       <Input
-                        id="name"
-                        name="name"
+                        id="subject"
+                        name="subject"
                         type="text"
-                        placeholder="Masukkan nama lengkap"
-                        value={formData.name}
+                        placeholder="Masukkan subjek pesan"
+                        value={formData.subject}
                         onChange={handleInputChange}
                         required
                         className="border-gray-300"
                       />
                     </div>
-                    
+
                     <div className="space-y-2">
-                      <Label htmlFor="phone">No. Telepon</Label>
-                      <Input
-                        id="phone"
-                        name="phone"
-                        type="tel"
-                        placeholder="Masukkan no. telepon"
-                        value={formData.phone}
+                      <Label htmlFor="message">Pesan *</Label>
+                      <Textarea
+                        id="message"
+                        name="message"
+                        placeholder="Tulis pesan Anda di sini..."
+                        value={formData.message}
                         onChange={handleInputChange}
-                        className="border-gray-300"
+                        required
+                        rows={5}
+                        className="border-gray-300 resize-none"
                       />
                     </div>
-                  </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email *</Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      placeholder="Masukkan alamat email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      required
-                      className="border-gray-300"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="subject">Subjek</Label>
-                    <Input
-                      id="subject"
-                      name="subject"
-                      type="text"
-                      placeholder="Masukkan subjek pesan"
-                      value={formData.subject}
-                      onChange={handleInputChange}
-                      className="border-gray-300"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="message">Pesan *</Label>
-                    <Textarea
-                      id="message"
-                      name="message"
-                      placeholder="Tulis pesan Anda di sini..."
-                      value={formData.message}
-                      onChange={handleInputChange}
-                      required
-                      rows={5}
-                      className="border-gray-300 resize-none"
-                    />
-                  </div>
-
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white py-3"
-                  >
-                    <Send className="h-4 w-4 mr-2" />
-                    Kirim Pesan
-                  </Button>
-                </form>
+                    <Button 
+                      type="submit" 
+                      className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white py-3"
+                    >
+                      <Send className="h-4 w-4 mr-2" />
+                      Kirim Pesan
+                    </Button>
+                  </form>
+                )}
               </CardContent>
             </Card>
           </div>
